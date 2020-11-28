@@ -11,8 +11,8 @@ import static java.lang.Math.pow;
 import static java.lang.Math.sqrt;
 
 public class ProcessDirection {
-    private final double deviationFromCenter = 0.002;
-    private final double closeToObject = 0.1;
+    // private final double deviationFromCenter = 0.002;
+    private final double closeToObject = 0.7;  // object takes x% of screen
     private final TextToSpeech tts;
 
     public ProcessDirection(TextToSpeech tts) {
@@ -22,19 +22,22 @@ public class ProcessDirection {
      * could do another function before to move the points
      */
     public void process(Rect rect, Display display){
-        Point size = new Point();
-        display.getSize(size);
+         Point size = new Point();
+         display.getSize(size);
          int dimensionX = size.x;
          int dimensionY = size.y;
          double cameraArea = dimensionX * dimensionY;
-         double rectArea = rect.width() * rect.height();
-         double ratio = rectArea / cameraArea;
+         double rectArea = (double)(rect.width() * rect.height());
+         double ratio = (rectArea / cameraArea);
+         // rectangle will "touch" the symmetry axis
+         double deviationFromCenter = rect.width() / 2.0;
 
          int movedAxisX = dimensionX / 2;
 
+         // center of gravity of rectangle
         PointF center = new PointF(rect.exactCenterX(), rect.exactCenterY());
 
-        if (ratio < closeToObject) {
+        if (ratio > closeToObject) {
              say("You are close enough to hit the button.");
          } else if(abs(movedAxisX - center.x) < deviationFromCenter) {
              say("Step forwards.");
