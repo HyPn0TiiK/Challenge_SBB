@@ -22,6 +22,8 @@ import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
 import androidx.appcompat.app.AppCompatActivity;
+
+import android.speech.tts.TextToSpeech;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -63,6 +65,7 @@ import com.google.mlkit.vision.pose.PoseDetectorOptionsBase;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 
 /** Live preview demo for ML Kit APIs. */
 @KeepName
@@ -87,11 +90,28 @@ public final class LivePreviewActivity extends AppCompatActivity
   private CameraSourcePreview preview;
   private GraphicOverlay graphicOverlay;
   private String selectedModel = OBJECT_DETECTION;
+  private TextToSpeech tts;
 
   @Override
   protected void onCreate(Bundle savedInstanceState) {
     super.onCreate(savedInstanceState);
     Log.d(TAG, "onCreate");
+
+    tts = new TextToSpeech(this, new TextToSpeech.OnInitListener() {
+      @Override
+      public void onInit(int status) {
+        if (status == TextToSpeech.SUCCESS) {
+          int res = tts.setLanguage(Locale.getDefault());
+          if (res == TextToSpeech.LANG_NOT_SUPPORTED || res == TextToSpeech.LANG_MISSING_DATA) {
+            Log.e("TTS", "Language not supported");
+          } else {
+            //TODO
+          }
+        } else {
+          Log.e("TTS", "Initialization failed");
+        }
+      }
+    });
 
     setContentView(R.layout.activity_vision_live_preview);
 
@@ -207,7 +227,7 @@ public final class LivePreviewActivity extends AppCompatActivity
           ObjectDetectorOptions objectDetectorOptions =
               PreferenceUtils.getObjectDetectorOptionsForLivePreview(this);
           cameraSource.setMachineLearningFrameProcessor(
-              new ObjectDetectorProcessor(this, objectDetectorOptions));
+              new ObjectDetectorProcessor(this, objectDetectorOptions, tts, null));
           break;
         case OBJECT_DETECTION_CUSTOM:
           Log.i(TAG, "Using Custom Object Detector Processor");
@@ -218,7 +238,7 @@ public final class LivePreviewActivity extends AppCompatActivity
           CustomObjectDetectorOptions customObjectDetectorOptions =
               PreferenceUtils.getCustomObjectDetectorOptionsForLivePreview(this, localModel);
           cameraSource.setMachineLearningFrameProcessor(
-              new ObjectDetectorProcessor(this, customObjectDetectorOptions));
+              new ObjectDetectorProcessor(this, customObjectDetectorOptions, tts, null));
           break;
         case TEXT_RECOGNITION:
           Log.i(TAG, "Using on-device Text recognition Processor");

@@ -18,27 +18,45 @@ package com.google.mlkit.vision.demo.java.objectdetector;
 
 import android.content.Context;
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+
+import android.speech.tts.TextToSpeech;
 import android.util.Log;
+import android.view.Display;
+
 import com.google.android.gms.tasks.Task;
 import com.google.mlkit.vision.common.InputImage;
 import com.google.mlkit.vision.demo.GraphicOverlay;
+import com.google.mlkit.vision.demo.java.ProcessDirection;
 import com.google.mlkit.vision.demo.java.VisionProcessorBase;
 import com.google.mlkit.vision.objects.DetectedObject;
 import com.google.mlkit.vision.objects.ObjectDetection;
 import com.google.mlkit.vision.objects.ObjectDetector;
 import com.google.mlkit.vision.objects.ObjectDetectorOptionsBase;
 import java.io.IOException;
+import java.sql.Time;
 import java.util.List;
 
 /** A processor to run object detector. */
 public class ObjectDetectorProcessor extends VisionProcessorBase<List<DetectedObject>> {
 
   private static final String TAG = "ObjectDetectorProcessor";
+  private Time currentDate;
+  private ProcessDirection pd;
 
   private final ObjectDetector detector;
+  private final TextToSpeech tts;
+  private final Display display;
 
-  public ObjectDetectorProcessor(Context context, ObjectDetectorOptionsBase options) {
+  public ObjectDetectorProcessor(Context context, ObjectDetectorOptionsBase options, @Nullable TextToSpeech tts,
+                                 @Nullable Display display) {
+
     super(context);
+    this.display = display;
+    this.tts = tts;
+    this.pd = new ProcessDirection(tts);
+    currentDate = new Time(0);
+    currentDate.setTime(System.currentTimeMillis());
     detector = ObjectDetection.getClient(options);
   }
 
@@ -62,11 +80,18 @@ public class ObjectDetectorProcessor extends VisionProcessorBase<List<DetectedOb
       @NonNull List<DetectedObject> results, @NonNull GraphicOverlay graphicOverlay) {
     for (DetectedObject object : results) {
       graphicOverlay.add(new ObjectGraphic(graphicOverlay, object));
+
+      pd.process(object.getBoundingBox(), display);
     }
   }
+
 
   @Override
   protected void onFailure(@NonNull Exception e) {
     Log.e(TAG, "Object detection failed!", e);
+  }
+
+  public void say(String instruction) {
+    tts.speak(instruction, TextToSpeech.QUEUE_ADD, null);
   }
 }

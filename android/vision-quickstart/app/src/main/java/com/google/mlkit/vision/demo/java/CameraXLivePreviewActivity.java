@@ -29,6 +29,8 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
+
+import android.speech.tts.TextToSpeech;
 import android.util.Log;
 import android.util.Size;
 import android.view.Menu;
@@ -77,6 +79,7 @@ import com.google.mlkit.vision.objects.defaults.ObjectDetectorOptions;
 import com.google.mlkit.vision.pose.PoseDetectorOptionsBase;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 
 /** Live preview demo app for ML Kit APIs using CameraX. */
 @KeepName
@@ -113,11 +116,28 @@ public final class CameraXLivePreviewActivity extends AppCompatActivity
   private String selectedModel = OBJECT_DETECTION;
   private int lensFacing = CameraSelector.LENS_FACING_BACK;
   private CameraSelector cameraSelector;
+  private TextToSpeech tts;
 
   @Override
   protected void onCreate(Bundle savedInstanceState) {
     super.onCreate(savedInstanceState);
     Log.d(TAG, "onCreate");
+
+      tts = new TextToSpeech(this, new TextToSpeech.OnInitListener() {
+      @Override
+      public void onInit(int status) {
+        if (status == TextToSpeech.SUCCESS) {
+          int res = tts.setLanguage(Locale.getDefault());
+          if (res == TextToSpeech.LANG_NOT_SUPPORTED || res == TextToSpeech.LANG_MISSING_DATA) {
+            Log.e("TTS", "Language not supported");
+          } else {
+            //TODO
+          }
+        } else {
+          Log.e("TTS", "Initialization failed");
+        }
+      }
+    });
 
     if (VERSION.SDK_INT < VERSION_CODES.LOLLIPOP) {
       Toast.makeText(
@@ -332,7 +352,7 @@ public final class CameraXLivePreviewActivity extends AppCompatActivity
           Log.i(TAG, "Using Object Detector Processor");
           ObjectDetectorOptions objectDetectorOptions =
               PreferenceUtils.getObjectDetectorOptionsForLivePreview(this);
-          imageProcessor = new ObjectDetectorProcessor(this, objectDetectorOptions);
+          imageProcessor = new ObjectDetectorProcessor(this, objectDetectorOptions, tts, getWindowManager().getDefaultDisplay());
           break;
         case OBJECT_DETECTION_CUSTOM:
           Log.i(TAG, "Using Custom Object Detector (Bird) Processor");
@@ -342,7 +362,7 @@ public final class CameraXLivePreviewActivity extends AppCompatActivity
                   .build();
           CustomObjectDetectorOptions customObjectDetectorOptions =
               PreferenceUtils.getCustomObjectDetectorOptionsForLivePreview(this, localModel);
-          imageProcessor = new ObjectDetectorProcessor(this, customObjectDetectorOptions);
+          imageProcessor = new ObjectDetectorProcessor(this, customObjectDetectorOptions, tts, getWindowManager().getDefaultDisplay());
           break;
         case TEXT_RECOGNITION:
           Log.i(TAG, "Using on-device Text recognition Processor");

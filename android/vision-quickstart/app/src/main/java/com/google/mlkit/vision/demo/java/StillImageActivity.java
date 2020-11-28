@@ -384,7 +384,7 @@ public final class StillImageActivity extends AppCompatActivity {
           Log.i(TAG, "Using Object Detector Processor");
           ObjectDetectorOptions objectDetectorOptions =
               PreferenceUtils.getObjectDetectorOptionsForStillImage(this);
-          imageProcessor = new ObjectDetectorProcessor(this, objectDetectorOptions);
+          imageProcessor = new ObjectDetectorProcessor(this, objectDetectorOptions, null, null);
           break;
         case OBJECT_DETECTION_CUSTOM:
           Log.i(TAG, "Using Custom Object Detector Processor");
@@ -394,7 +394,7 @@ public final class StillImageActivity extends AppCompatActivity {
                   .build();
           CustomObjectDetectorOptions customObjectDetectorOptions =
               PreferenceUtils.getCustomObjectDetectorOptionsForStillImage(this, localModel);
-          imageProcessor = new ObjectDetectorProcessor(this, customObjectDetectorOptions);
+          imageProcessor = new ObjectDetectorProcessor(this, customObjectDetectorOptions, null,null);
           break;
         case FACE_DETECTION:
           imageProcessor = new FaceDetectorProcessor(this);
