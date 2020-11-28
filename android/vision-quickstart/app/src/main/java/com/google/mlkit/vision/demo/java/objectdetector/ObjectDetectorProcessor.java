@@ -19,7 +19,9 @@ package com.google.mlkit.vision.demo.java.objectdetector;
 import android.content.Context;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.annotation.RequiresApi;
 
+import android.os.Build;
 import android.speech.tts.TextToSpeech;
 import android.util.Log;
 import android.view.Display;
@@ -35,6 +37,8 @@ import com.google.mlkit.vision.objects.ObjectDetector;
 import com.google.mlkit.vision.objects.ObjectDetectorOptionsBase;
 import java.io.IOException;
 import java.sql.Time;
+import java.time.Duration;
+import java.time.Instant;
 import java.util.List;
 
 /** A processor to run object detector. */
@@ -43,11 +47,13 @@ public class ObjectDetectorProcessor extends VisionProcessorBase<List<DetectedOb
   private static final String TAG = "ObjectDetectorProcessor";
   private Time currentDate;
   private ProcessDirection pd;
+  private Instant start;
 
   private final ObjectDetector detector;
   private final TextToSpeech tts;
   private final Display display;
 
+  @RequiresApi(api = Build.VERSION_CODES.O)
   public ObjectDetectorProcessor(Context context, ObjectDetectorOptionsBase options, @Nullable TextToSpeech tts,
                                  @Nullable Display display) {
 
@@ -55,6 +61,7 @@ public class ObjectDetectorProcessor extends VisionProcessorBase<List<DetectedOb
     this.display = display;
     this.tts = tts;
     this.pd = new ProcessDirection(tts);
+    start = Instant.now();
     currentDate = new Time(0);
     currentDate.setTime(System.currentTimeMillis());
     detector = ObjectDetection.getClient(options);
@@ -75,13 +82,17 @@ public class ObjectDetectorProcessor extends VisionProcessorBase<List<DetectedOb
     return detector.process(image);
   }
 
+  @RequiresApi(api = Build.VERSION_CODES.O)
   @Override
   protected void onSuccess(
-      @NonNull List<DetectedObject> results, @NonNull GraphicOverlay graphicOverlay) {
+          @NonNull List<DetectedObject> results, @NonNull GraphicOverlay graphicOverlay) {
     for (DetectedObject object : results) {
       graphicOverlay.add(new ObjectGraphic(graphicOverlay, object));
+      if(Duration.between(start, Instant.now()).compareTo(Duration.ofSeconds(3L, 1L)) > 0) {
+        pd.process(object.getBoundingBox(), display);
+        start = Instant.now();
+      }
 
-      pd.process(object.getBoundingBox(), display);
     }
   }
 
@@ -92,6 +103,6 @@ public class ObjectDetectorProcessor extends VisionProcessorBase<List<DetectedOb
   }
 
   public void say(String instruction) {
-    tts.speak(instruction, TextToSpeech.QUEUE_ADD, null);
+    tts.speak(instruction, TextToSpeech.QUEUE_FLUSH, null);
   }
 }
