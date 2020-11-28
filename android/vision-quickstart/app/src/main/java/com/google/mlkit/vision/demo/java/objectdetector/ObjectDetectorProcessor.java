@@ -16,6 +16,7 @@
 
 package com.google.mlkit.vision.demo.java.objectdetector;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -23,8 +24,10 @@ import androidx.annotation.RequiresApi;
 
 import android.os.Build;
 import android.speech.tts.TextToSpeech;
+import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.Display;
+import android.view.WindowMetrics;
 
 import com.google.android.gms.tasks.Task;
 import com.google.mlkit.vision.common.InputImage;
@@ -51,11 +54,11 @@ public class ObjectDetectorProcessor extends VisionProcessorBase<List<DetectedOb
 
   private final ObjectDetector detector;
   private final TextToSpeech tts;
-  private final Display display;
+  private final DisplayMetrics display;
 
   @RequiresApi(api = Build.VERSION_CODES.O)
   public ObjectDetectorProcessor(Context context, ObjectDetectorOptionsBase options, @Nullable TextToSpeech tts,
-                                 @Nullable Display display) {
+                                 @Nullable DisplayMetrics display) {
 
     super(context);
     this.display = display;
@@ -82,6 +85,7 @@ public class ObjectDetectorProcessor extends VisionProcessorBase<List<DetectedOb
     return detector.process(image);
   }
 
+  @SuppressLint("NewApi")
   @RequiresApi(api = Build.VERSION_CODES.O)
   @Override
   protected void onSuccess(
@@ -89,7 +93,8 @@ public class ObjectDetectorProcessor extends VisionProcessorBase<List<DetectedOb
     for (DetectedObject object : results) {
       graphicOverlay.add(new ObjectGraphic(graphicOverlay, object));
       if(Duration.between(start, Instant.now()).compareTo(Duration.ofSeconds(3L, 1L)) > 0) {
-        pd.process(object.getBoundingBox(), display);
+          System.out.println("graphic overlay (width / height) : " + graphicOverlay.getImageWidth() + "/" + graphicOverlay.getImageHeight());
+        pd.process(object.getBoundingBox(), graphicOverlay);
         start = Instant.now();
       }
 

@@ -2,9 +2,16 @@ package com.google.mlkit.vision.demo.java;
 import android.graphics.Point;
 import android.graphics.PointF;
 import android.graphics.Rect;
+import android.os.Build;
 import android.speech.tts.TextToSpeech;
+import android.util.DisplayMetrics;
 import android.util.Size;
 import android.view.Display;
+import android.view.WindowMetrics;
+
+import androidx.annotation.RequiresApi;
+
+import com.google.mlkit.vision.demo.GraphicOverlay;
 
 import static java.lang.Math.abs;
 import static java.lang.Math.pow;
@@ -12,7 +19,7 @@ import static java.lang.Math.sqrt;
 
 public class ProcessDirection {
     // private final double deviationFromCenter = 0.002;
-    private final double closeToObject = 0.7;  // object takes x% of screen
+    private final double closeToObject = 0.4;  // object takes x% of screen
     private final TextToSpeech tts;
 
     public ProcessDirection(TextToSpeech tts) {
@@ -21,29 +28,39 @@ public class ProcessDirection {
     /* suppose the axis is centered in the middle of the phone camera,
      * could do another function before to move the points
      */
-    public void process(Rect rect, Display display){
-         Point size = new Point();
-         display.getSize(size);
-         int dimensionX = size.x;
-         int dimensionY = size.y;
+    @RequiresApi(api = Build.VERSION_CODES.R)
+    public void process(Rect rect, GraphicOverlay g){
+         int dimensionX = g.getImageWidth();
+         int dimensionY = g.getImageHeight();
          double cameraArea = dimensionX * dimensionY;
-         double rectArea = (double)(rect.width() * rect.height());
+         double rectArea = (rect.width() * rect.height());
          double ratio = (rectArea / cameraArea);
          // rectangle will "touch" the symmetry axis
          double deviationFromCenter = rect.width() / 2.0;
 
-         int movedAxisX = dimensionX / 2;
+         double movedAxisX = dimensionX / 2.0;
 
          // center of gravity of rectangle
-        PointF center = new PointF(rect.exactCenterX(), rect.exactCenterY());
+        float centerX = rect.exactCenterX();
+
+//        System.out.println("dimensionX screen = " + dimensionX);
+//        System.out.println("dimensionY screen = " + dimensionY);
+//        System.out.println("rect width = " + rect.width());
+//        System.out.println("rect height = " + rect.height());
+//
+//        System.out.println(" movedAxisX = " + movedAxisX);
+//        System.out.println(" centerX of rectangle = " + centerX);
+//        System.out.println(" ---------------------------------");
+//        System.out.println();
 
         if (ratio > closeToObject) {
+            System.out.println("ratio" + ratio);
              say("You are close enough to hit the button.");
-         } else if(abs(movedAxisX - center.x) < deviationFromCenter) {
+         } else if(abs(movedAxisX - centerX) < deviationFromCenter) {
              say("Step forwards.");
-         } else if(center.x < movedAxisX) {
+         } else if(centerX < movedAxisX) {
              say("Step forwards on the left.");
-        } else {
+        } else if (centerX >= movedAxisX){
             say("Step forwards on the right.");
         }
 

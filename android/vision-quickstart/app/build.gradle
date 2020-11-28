@@ -11,13 +11,13 @@ android {
             keyAlias 'key0'
         }
     }
-    compileSdkVersion 29
+    compileSdkVersion 30
 
     defaultConfig {
         applicationId "com.google.mlkit.vision.demo"
         minSdkVersion 16
         multiDexEnabled true
-        targetSdkVersion 29
+        targetSdkVersion defaultTargetSdkVersion
 
         versionCode 11
         versionName "1.11"

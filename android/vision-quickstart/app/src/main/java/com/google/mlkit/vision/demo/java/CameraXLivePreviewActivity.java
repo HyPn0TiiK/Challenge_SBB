@@ -31,6 +31,7 @@ import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.speech.tts.TextToSpeech;
+import android.util.DisplayMetrics;
 import android.util.Log;
 import android.util.Size;
 import android.view.Menu;
@@ -352,7 +353,9 @@ public final class CameraXLivePreviewActivity extends AppCompatActivity
           Log.i(TAG, "Using Object Detector Processor");
           ObjectDetectorOptions objectDetectorOptions =
               PreferenceUtils.getObjectDetectorOptionsForLivePreview(this);
-          imageProcessor = new ObjectDetectorProcessor(this, objectDetectorOptions, tts, getWindowManager().getDefaultDisplay());
+          DisplayMetrics metrics = new DisplayMetrics();
+          getWindowManager().getDefaultDisplay().getRealMetrics(metrics);
+          imageProcessor = new ObjectDetectorProcessor(this, objectDetectorOptions, tts, metrics);
           break;
         case OBJECT_DETECTION_CUSTOM:
           Log.i(TAG, "Using Custom Object Detector (Bird) Processor");
@@ -362,7 +365,9 @@ public final class CameraXLivePreviewActivity extends AppCompatActivity
                   .build();
           CustomObjectDetectorOptions customObjectDetectorOptions =
               PreferenceUtils.getCustomObjectDetectorOptionsForLivePreview(this, localModel);
-          imageProcessor = new ObjectDetectorProcessor(this, customObjectDetectorOptions, tts, getWindowManager().getDefaultDisplay());
+          DisplayMetrics metrics2 = new DisplayMetrics();
+          getWindowManager().getDefaultDisplay().getRealMetrics(metrics2);
+          imageProcessor = new ObjectDetectorProcessor(this, customObjectDetectorOptions, tts, metrics2);
           break;
         case TEXT_RECOGNITION:
           Log.i(TAG, "Using on-device Text recognition Processor");
