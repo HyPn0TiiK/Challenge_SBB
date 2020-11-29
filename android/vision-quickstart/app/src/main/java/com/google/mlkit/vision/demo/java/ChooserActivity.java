@@ -93,7 +93,7 @@ public final class ChooserActivity extends AppCompatActivity
 
   @Override
   public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-    Class<?> clicked = CLASSES[position];
+    Class<?> clicked = CLASSES[2];
     startActivity(new Intent(this, clicked));
   }
 
